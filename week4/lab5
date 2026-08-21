@@ -99,3 +99,57 @@ public class Main {
         }
     }
 }
+
+
+===== BANKING TRANSACTION SYSTEM =====
+1. Deposit
+2. Withdraw
+3. Check Balance
+4. Account Details
+5. Exit
+Enter your choice: 1
+Enter deposit amount: 49000
+Deposit successful!
+Current Balance: 59000.0
+
+===== BANKING TRANSACTION SYSTEM =====
+1. Deposit
+2. Withdraw
+3. Check Balance
+4. Account Details
+5. Exit
+Enter your choice: 2
+Enter withdrawal amount: 49000
+Withdrawal successful!
+Current Balance: 10000.0
+
+===== BANKING TRANSACTION SYSTEM =====
+1. Deposit
+2. Withdraw
+3. Check Balance
+4. Account Details
+5. Exit
+Enter your choice: 3
+Current Balance: 10000.0
+
+===== BANKING TRANSACTION SYSTEM =====
+1. Deposit
+2. Withdraw
+3. Check Balance
+4. Account Details
+5. Exit
+Enter your choice: 4
+
+----- Account Details -----
+Account Number : 1001
+Account Holder : Mani
+Balance        : 10000.0
+
+===== BANKING TRANSACTION SYSTEM =====
+1. Deposit
+2. Withdraw
+3. Check Balance
+4. Account Details
+5. Exit
+Enter your choice: 
+=== Session Ended. Please Run the code again ==
