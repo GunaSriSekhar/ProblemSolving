@@ -1,0 +1,73 @@
+import java.util.*;
+
+public class EfficientPatternsDemo {
+
+    // 1. Two-Pointer Approach: O(N) vs O(N^2) Nested Loops
+    // Finds if two numbers in a sorted array sum to target
+    public static boolean hasTwoSumSorted(int[] arr, int target) {
+        int left = 0;
+        int right = arr.length - 1;
+
+        while (left < right) {
+            int currentSum = arr[left] + arr[right];
+            if (currentSum == target) {
+                return true;
+            } else if (currentSum < target) {
+                left++; // Move right to increase sum
+            } else {
+                right--; // Move left to decrease sum
+            }
+        }
+        return false;
+    }
+
+    // 2. String Concatenation: StringBuilder vs '+' Operator in Loops
+    // Avoids creating O(N) intermediate immutable String objects on heap
+    public static String buildEfficientString(int count) {
+        // Pre-size builder to prevent underlying array reallocations
+        StringBuilder sb = new StringBuilder(count * 6);
+        for (int i = 0; i < count; i++) {
+            sb.append("num:").append(i).append(' ');
+        }
+        return sb.toString();
+    }
+
+    // 3. Fast Lookup via HashSet: O(1) avg lookup vs O(N) linear search
+    public static int countCommonElements(int[] a, int[] b) {
+        // Pre-allocate capacity: (expected elements / load_factor) + 1
+        Set<Integer> set = new HashSet<>((int) (a.length / 0.75f) + 1);
+        for (int val : a) {
+            set.add(val);
+        }
+
+        int matches = 0;
+        for (int val : b) {
+            if (set.contains(val)) {
+                matches++;
+            }
+        }
+        return matches;
+    }
+
+    // 4. Bitwise Checks: O(1) without modulo operator
+    public static boolean isPowerOfTwo(int n) {
+        return n > 0 && (n & (n - 1)) == 0;
+    }
+
+    public static void main(String[] args) {
+        int[] sortedArr = {2, 7, 11, 15, 19, 23};
+        System.out.println("Two Sum Target 26 Found: " + hasTwoSumSorted(sortedArr, 26));
+
+        int[] a = {1, 3, 5, 7, 9};
+        int[] b = {0, 2, 3, 6, 7};
+        System.out.println("Common Elements: " + countCommonElements(a, b));
+
+        System.out.println("Is 64 a Power of Two: " + isPowerOfTwo(64));
+    }
+} 
+
+Two Sum Target 26 Found: true
+Common Elements: 2
+Is 64 a Power of Two: true
+
+=== Code Execution Successful ===
