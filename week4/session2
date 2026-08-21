@@ -23,3 +23,7 @@ public class Main {
         System.out.println("Result: " + result);
     }
 }
+
+Result: 1
+
+=== Code Execution Successful ===
