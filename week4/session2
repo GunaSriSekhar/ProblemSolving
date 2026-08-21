@@ -1,0 +1,25 @@
+public class Main {
+    public static int binarySearchAnswer(int low, int high) {
+        int ans = high;
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+            if (isValid(mid)) {
+                ans = mid;          // Candidate found
+                high = mid - 1;     // Try for a smaller/better value
+            } else {
+                low = mid + 1;
+            }
+        }
+        return ans;
+    }
+
+    private static boolean isValid(int target) {
+        // Condition check logic here
+        return true;
+    }
+
+    public static void main(String[] args) {
+        int result = binarySearchAnswer(1, 100);
+        System.out.println("Result: " + result);
+    }
+}
