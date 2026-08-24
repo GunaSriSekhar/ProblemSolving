@@ -1,0 +1,205 @@
+import java.util.*;
+
+// Represents a 2D coordinate on a grid
+class Location {
+    private final double x;
+    private final double y;
+
+    public Location(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public double distanceTo(Location other) {
+        return Math.hypot(this.x - other.x, this.y - other.y);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("(%.1f, %.1f)", x, y);
+    }
+}
+
+// Driver class
+class Driver {
+    private final String id;
+    private final String name;
+    private Location currentLocation;
+    private boolean isAvailable;
+
+    public Driver(String id, String name, Location location) {
+        this.id = id;
+        this.name = name;
+        this.currentLocation = location;
+        this.isAvailable = true;
+    }
+
+    public String getId() { return id; }
+    public String getName() { return name; }
+    public Location getCurrentLocation() { return currentLocation; }
+    public boolean isAvailable() { return isAvailable; }
+
+    public void setAvailable(boolean available) { this.isAvailable = available; }
+    public void setLocation(Location location) { this.currentLocation = location; }
+}
+
+// Passenger class
+class Passenger {
+    private final String id;
+    private final String name;
+    private Location location;
+
+    public Passenger(String id, String name, Location location) {
+        this.id = id;
+        this.name = name;
+        this.location = location;
+    }
+
+    public String getName() { return name; }
+    public Location getLocation() { return location; }
+    public void setLocation(Location location) { this.location = location; }
+}
+
+// Strategy Pattern for Fare Calculation
+interface FareStrategy {
+    double calculateFare(double distance);
+}
+
+class StandardFareStrategy implements FareStrategy {
+    private static final double BASE_FARE = 2.50;
+    private static final double RATE_PER_KM = 1.20;
+
+    @Override
+    public double calculateFare(double distance) {
+        return BASE_FARE + (distance * RATE_PER_KM);
+    }
+}
+
+class SurgeFareStrategy implements FareStrategy {
+    private final double surgeMultiplier;
+    private final StandardFareStrategy baseStrategy = new StandardFareStrategy();
+
+    public SurgeFareStrategy(double multiplier) {
+        this.surgeMultiplier = multiplier;
+    }
+
+    @Override
+    public double calculateFare(double distance) {
+        return baseStrategy.calculateFare(distance) * surgeMultiplier;
+    }
+}
+
+// Ride lifecycle management
+class Ride {
+    private final String rideId;
+    private final Passenger passenger;
+    private final Driver driver;
+    private final Location pickup;
+    private final Location dropoff;
+    private final double fare;
+
+    public Ride(String rideId, Passenger passenger, Driver driver, Location pickup, Location dropoff, double fare) {
+        this.rideId = rideId;
+        this.passenger = passenger;
+        this.driver = driver;
+        this.pickup = pickup;
+        this.dropoff = dropoff;
+        this.fare = fare;
+    }
+
+    public void startRide() {
+        System.out.printf("[%s] Ride started. %s is driving %s from %s to %s.%n", 
+                rideId, driver.getName(), passenger.getName(), pickup, dropoff);
+    }
+
+    public void completeRide() {
+        driver.setLocation(dropoff);
+        driver.setAvailable(true);
+        passenger.setLocation(dropoff);
+        System.out.printf("[%s] Ride completed! Fare charged: $%.2f%n", rideId, fare);
+    }
+}
+
+// Central Platform Dispatcher
+class RideSharingService {
+    private final List<Driver> drivers = new ArrayList<>();
+    private FareStrategy fareStrategy = new StandardFareStrategy();
+    private int rideCounter = 1000;
+
+    public void registerDriver(Driver driver) {
+        drivers.add(driver);
+    }
+
+    public void setFareStrategy(FareStrategy strategy) {
+        this.fareStrategy = strategy;
+    }
+
+    // Matches the closest available driver
+    public Ride requestRide(Passenger passenger, Location dropoff) {
+        Optional<Driver> nearestDriver = drivers.stream()
+                .filter(Driver::isAvailable)
+                .min(Comparator.comparingDouble(d -> d.getCurrentLocation().distanceTo(passenger.getLocation())));
+
+        if (nearestDriver.isEmpty()) {
+            System.out.println("No drivers available for " + passenger.getName() + " right now.");
+            return null;
+        }
+
+        Driver driver = nearestDriver.get();
+        driver.setAvailable(false);
+
+        double tripDistance = passenger.getLocation().distanceTo(dropoff);
+        double fare = fareStrategy.calculateFare(tripDistance);
+        String rideId = "RIDE-" + (++rideCounter);
+
+        System.out.printf("Match found! Driver %s (%.2f km away) assigned to %s.%n", 
+                driver.getName(), driver.getCurrentLocation().distanceTo(passenger.getLocation()), passenger.getName());
+
+        return new Ride(rideId, passenger, driver, passenger.getLocation(), dropoff, fare);
+    }
+}
+
+// Simulator Main Class
+public class Main {
+    public static void main(String[] args) {
+        RideSharingService platform = new RideSharingService();
+
+        // 1. Register Drivers
+        platform.registerDriver(new Driver("D1", "Ramesh", new Location(2.0, 3.0)));
+        platform.registerDriver(new Driver("D2", "Suresh", new Location(10.0, 15.0)));
+        platform.registerDriver(new Driver("D3", "Anita", new Location(5.0, 6.0)));
+
+        // 2. Create Passengers
+        Passenger p1 = new Passenger("P1", "Guna", new Location(3.0, 3.0));
+        Passenger p2 = new Passenger("P2", "Kavya", new Location(4.5, 5.5));
+
+        System.out.println("--- Simulation 1: Standard Ride ---");
+        Location destination1 = new Location(12.0, 9.0);
+        Ride ride1 = platform.requestRide(p1, destination1);
+        if (ride1 != null) {
+            ride1.startRide();
+            ride1.completeRide();
+        }
+
+        System.out.println("\n--- Simulation 2: Peak Hour (Surge Pricing) ---");
+        platform.setFareStrategy(new SurgeFareStrategy(1.5)); // 1.5x surge
+        Location destination2 = new Location(8.0, 12.0);
+        Ride ride2 = platform.requestRide(p2, destination2);
+        if (ride2 != null) {
+            ride2.startRide();
+            ride2.completeRide();
+        }
+    }
+}
+
+--- Simulation 1: Standard Ride ---
+Match found! Driver Ramesh (1.00 km away) assigned to Guna.
+[RIDE-1001] Ride started. Ramesh is driving Guna from (3.0, 3.0) to (12.0, 9.0).
+[RIDE-1001] Ride completed! Fare charged: $15.48
+
+--- Simulation 2: Peak Hour (Surge Pricing) ---
+Match found! Driver Anita (0.71 km away) assigned to Kavya.
+[RIDE-1002] Ride started. Anita is driving Kavya from (4.5, 5.5) to (8.0, 12.0).
+[RIDE-1002] Ride completed! Fare charged: $17.04
+
+=== Code Execution Successful ===
